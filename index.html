@@ -1,0 +1,1654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Park Buddy - Smart Parking Management System</title>
+  <style>
+    /* ===================================================
+       1. GLOBAL & RESET STYLES
+       =================================================== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: #f1f5f9;
+      color: #1e293b;
+      line-height: 1.5;
+      padding-bottom: 40px;
+    }
+
+    /* Container for max width and centering */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px 16px;
+    }
+
+    /* ===================================================
+       2. HEADER & BRANDING
+       =================================================== */
+    header {
+      background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+      color: #ffffff;
+      padding: 24px 20px;
+      border-radius: 16px;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 15px -3px rgba(30, 58, 138, 0.2);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-icon {
+      font-size: 2.5rem;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 8px 12px;
+      border-radius: 12px;
+      display: inline-block;
+    }
+
+    .brand-text h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-text p {
+      font-size: 0.95rem;
+      opacity: 0.9;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    /* ===================================================
+       3. NOTIFICATION ALERT / TOAST
+       =================================================== */
+    #notification {
+      display: none;
+      padding: 14px 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    #notification.success {
+      background-color: #dcfce7;
+      color: #166534;
+      border-left: 5px solid #22c55e;
+    }
+
+    #notification.error {
+      background-color: #fee2e2;
+      color: #991b1b;
+      border-left: 5px solid #ef4444;
+    }
+
+    #notification.info {
+      background-color: #e0f2fe;
+      color: #075985;
+      border-left: 5px solid #0284c7;
+    }
+
+    .close-notification-btn {
+      background: transparent;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: inherit;
+      padding-left: 12px;
+    }
+
+    /* ===================================================
+       4. DASHBOARD STATS COUNTERS
+       =================================================== */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background-color: #ffffff;
+      padding: 18px 20px;
+      border-radius: 14px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 4px solid #cbd5e1;
+    }
+
+    .stat-card.total { border-top-color: #3b82f6; }
+    .stat-card.available { border-top-color: #10b981; }
+    .stat-card.reserved { border-top-color: #f59e0b; }
+    .stat-card.occupied { border-top-color: #ef4444; }
+
+    .stat-info h3 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #64748b;
+      margin-bottom: 4px;
+    }
+
+    .stat-info .stat-number {
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .stat-emoji {
+      font-size: 2.2rem;
+    }
+
+    /* ===================================================
+       5. SEARCH & FILTER TOOLBAR
+       =================================================== */
+    .toolbar-card {
+      background-color: #ffffff;
+      padding: 16px 20px;
+      border-radius: 14px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      margin-bottom: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 260px;
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 12px 16px 12px 40px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-box input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    .search-box span.search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1rem;
+      color: #94a3b8;
+    }
+
+    .filter-tags {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .filter-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #64748b;
+    }
+
+    .filter-btn {
+      border: 1px solid #e2e8f0;
+      background-color: #f8fafc;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: #475569;
+      transition: all 0.2s;
+    }
+
+    .filter-btn:hover {
+      background-color: #e2e8f0;
+    }
+
+    .filter-btn.active {
+      background-color: #1e3a8a;
+      color: #ffffff;
+      border-color: #1e3a8a;
+    }
+
+    /* ===================================================
+       6. MAIN CONTENT LAYOUT (PARKING LOT + BOOKING FORM)
+       =================================================== */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+      margin-bottom: 30px;
+    }
+
+    @media (max-width: 992px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .section-card {
+      background-color: #ffffff;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .section-header h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .legend {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .dot-available { background-color: #10b981; }
+    .dot-reserved { background-color: #f59e0b; }
+    .dot-occupied { background-color: #ef4444; }
+
+    /* ===================================================
+       7. 12 PARKING SLOTS GRID
+       =================================================== */
+    .slots-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+    }
+
+    .slot-card {
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px;
+      background-color: #ffffff;
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .slot-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 12px -2px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Selected slot glow */
+    .slot-card.selected {
+      border-color: #2563eb !important;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3) !important;
+      transform: translateY(-2px);
+    }
+
+    /* Available Slot - Green */
+    .slot-card.status-available {
+      border-color: #a7f3d0;
+      background-color: #f0fdf4;
+    }
+
+    .slot-card.status-available .status-badge {
+      background-color: #dcfce7;
+      color: #15803d;
+    }
+
+    /* Reserved Slot - Orange */
+    .slot-card.status-reserved {
+      border-color: #fde68a;
+      background-color: #fffbeb;
+    }
+
+    .slot-card.status-reserved .status-badge {
+      background-color: #fef3c7;
+      color: #b45309;
+    }
+
+    /* Occupied Slot - Red */
+    .slot-card.status-occupied {
+      border-color: #fecaca;
+      background-color: #fef2f2;
+    }
+
+    .slot-card.status-occupied .status-badge {
+      background-color: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .slot-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .slot-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .status-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      letter-spacing: 0.3px;
+    }
+
+    .slot-body {
+      margin-bottom: 14px;
+      min-height: 48px;
+    }
+
+    .slot-empty-text {
+      color: #059669;
+      font-size: 0.85rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .slot-info-item {
+      font-size: 0.82rem;
+      color: #475569;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .slot-info-item strong {
+      color: #1e293b;
+    }
+
+    .slot-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    /* Mini action buttons on slot cards */
+    .mini-btn {
+      flex: 1;
+      padding: 6px 4px;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: opacity 0.2s;
+    }
+
+    .mini-btn:hover {
+      opacity: 0.85;
+    }
+
+    .btn-select { background-color: #10b981; color: #ffffff; }
+    .btn-checkin { background-color: #f59e0b; color: #ffffff; }
+    .btn-checkout { background-color: #ef4444; color: #ffffff; }
+    .btn-cancel { background-color: #64748b; color: #ffffff; }
+
+    /* ===================================================
+       8. BOOKING FORM
+       =================================================== */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 6px;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      color: #0f172a;
+      background-color: #ffffff;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    .selected-slot-banner {
+      background-color: #eff6ff;
+      border: 1px dashed #3b82f6;
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+    }
+
+    .selected-slot-banner span.slot-highlight {
+      font-weight: 700;
+      color: #1d4ed8;
+    }
+
+    .fee-calculator-box {
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 20px;
+    }
+
+    .fee-calculator-box .fee-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-bottom: 6px;
+    }
+
+    .fee-calculator-box .fee-total-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #0f172a;
+      border-top: 1px dashed #cbd5e1;
+      padding-top: 8px;
+      margin-top: 8px;
+    }
+
+    .fee-calculator-box .total-amount {
+      color: #16a34a;
+      font-size: 1.2rem;
+    }
+
+    .form-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 12px 18px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background-color: #2563eb;
+      color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background-color: #1d4ed8;
+    }
+
+    .btn-secondary {
+      background-color: #f59e0b;
+      color: #ffffff;
+    }
+
+    .btn-secondary:hover {
+      background-color: #d97706;
+    }
+
+    .btn-outline {
+      background-color: transparent;
+      border: 1px solid #cbd5e1;
+      color: #475569;
+    }
+
+    .btn-outline:hover {
+      background-color: #f1f5f9;
+      color: #0f172a;
+    }
+
+    .btn-reset-demo {
+      background-color: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: #ffffff;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-reset-demo:hover {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .server-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      color: #ffffff;
+      backdrop-filter: blur(4px);
+    }
+
+    .status-dot-pulse {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background-color: #f59e0b;
+      display: inline-block;
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4);
+    }
+
+    /* ===================================================
+       9. CURRENT BOOKINGS TABLE
+       =================================================== */
+    .table-responsive {
+      overflow-x: auto;
+      margin-top: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    thead th {
+      background-color: #f8fafc;
+      color: #475569;
+      font-weight: 600;
+      padding: 12px 14px;
+      border-bottom: 2px solid #e2e8f0;
+      white-space: nowrap;
+    }
+
+    tbody td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #334155;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    tbody tr:hover {
+      background-color: #f8fafc;
+    }
+
+    .table-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 32px 16px;
+      color: #64748b;
+      font-size: 0.95rem;
+    }
+
+    .empty-state-icon {
+      font-size: 2.2rem;
+      margin-bottom: 8px;
+    }
+
+    /* ===================================================
+       10. FOOTER
+       =================================================== */
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      color: #64748b;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- HEADER -->
+    <header>
+      <div class="brand">
+        <div class="brand-icon">🚗</div>
+        <div class="brand-text">
+          <h1>Park Buddy</h1>
+          <p>Simple & Smart College Parking Management System</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <!-- Live backend connection indicator -->
+        <div class="server-status-pill" id="server-status-pill" title="Backend Server Status">
+          <span class="status-dot-pulse" id="server-status-dot"></span>
+          <span id="server-status-text">Connecting to Backend...</span>
+        </div>
+        <!-- Button to reload default sample data if needed -->
+        <button class="btn-reset-demo" onclick="resetToSampleData()" title="Reset to initial sample slots">
+          🔄 Reset Sample Data
+        </button>
+      </div>
+    </header>
+
+    <!-- NOTIFICATION ALERT BOX -->
+    <div id="notification">
+      <span id="notification-message">Notification text</span>
+      <button class="close-notification-btn" onclick="closeNotification()">✕</button>
+    </div>
+
+    <!-- STATS DASHBOARD CARDS -->
+    <section class="stats-grid">
+      <div class="stat-card total">
+        <div class="stat-info">
+          <h3>Total Slots</h3>
+          <div class="stat-number" id="stat-total">12</div>
+        </div>
+        <div class="stat-emoji">🅿️</div>
+      </div>
+
+      <div class="stat-card available">
+        <div class="stat-info">
+          <h3>Available</h3>
+          <div class="stat-number" id="stat-available" style="color: #10b981;">0</div>
+        </div>
+        <div class="stat-emoji">🟢</div>
+      </div>
+
+      <div class="stat-card reserved">
+        <div class="stat-info">
+          <h3>Reserved</h3>
+          <div class="stat-number" id="stat-reserved" style="color: #f59e0b;">0</div>
+        </div>
+        <div class="stat-emoji">🟠</div>
+      </div>
+
+      <div class="stat-card occupied">
+        <div class="stat-info">
+          <h3>Occupied</h3>
+          <div class="stat-number" id="stat-occupied" style="color: #ef4444;">0</div>
+        </div>
+        <div class="stat-emoji">🔴</div>
+      </div>
+    </section>
+
+    <!-- SEARCH & STATUS FILTER TOOLBAR -->
+    <div class="toolbar-card">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input 
+          type="text" 
+          id="search-input" 
+          placeholder="Search by slot (e.g. S-01), driver name, vehicle number..."
+          oninput="handleSearch()"
+        >
+      </div>
+
+      <div class="filter-tags">
+        <span class="filter-label">Filter:</span>
+        <button class="filter-btn active" onclick="setFilter('all', this)">All (12)</button>
+        <button class="filter-btn" onclick="setFilter('available', this)">🟢 Available</button>
+        <button class="filter-btn" onclick="setFilter('reserved', this)">🟠 Reserved</button>
+        <button class="filter-btn" onclick="setFilter('occupied', this)">🔴 Occupied</button>
+      </div>
+    </div>
+
+    <!-- MAIN TWO-COLUMN SECTION -->
+    <div class="main-grid">
+
+      <!-- LEFT: 12 PARKING SLOTS DISPLAY -->
+      <section class="section-card">
+        <div class="section-header">
+          <h2>🅿️ Parking Slots</h2>
+          <div class="legend">
+            <div class="legend-item"><span class="legend-dot dot-available"></span> Available</div>
+            <div class="legend-item"><span class="legend-dot dot-reserved"></span> Reserved</div>
+            <div class="legend-item"><span class="legend-dot dot-occupied"></span> Occupied</div>
+          </div>
+        </div>
+
+        <!-- 12 Slots grid will be generated here by JavaScript -->
+        <div class="slots-container" id="slots-container">
+          <!-- Rendered dynamically -->
+        </div>
+      </section>
+
+      <!-- RIGHT: BOOKING FORM -->
+      <section class="section-card" id="booking-section">
+        <div class="section-header">
+          <h2>📝 Book a Slot</h2>
+        </div>
+
+        <form id="booking-form" onsubmit="handleBookingSubmit(event)">
+
+          <!-- Highlight of currently selected slot -->
+          <div class="selected-slot-banner">
+            <span>Selected Slot:</span>
+            <span class="slot-highlight" id="selected-slot-text">None (Click a green slot)</span>
+          </div>
+
+          <!-- Hidden input storing chosen slot ID -->
+          <input type="hidden" id="selected-slot-id" value="">
+
+          <!-- Driver Name -->
+          <div class="form-group">
+            <label for="driver-name">Driver Full Name *</label>
+            <input 
+              type="text" 
+              id="driver-name" 
+              placeholder="e.g. Alex Johnson" 
+              required
+            >
+          </div>
+
+          <!-- Vehicle Number -->
+          <div class="form-group">
+            <label for="vehicle-number">Vehicle Number *</label>
+            <input 
+              type="text" 
+              id="vehicle-number" 
+              placeholder="e.g. MH12 AB 1234 or NY-5521" 
+              required
+            >
+          </div>
+
+          <!-- Vehicle Type -->
+          <div class="form-group">
+            <label for="vehicle-type">Vehicle Type *</label>
+            <select id="vehicle-type" onchange="updateFeeCalculation()" required>
+              <option value="Car" selected>🚗 Car (Standard - $5/hr)</option>
+              <option value="Bike">🏍️ Bike / Motorcycle ($2/hr)</option>
+              <option value="SUV">🚙 SUV / Large Vehicle ($8/hr)</option>
+            </select>
+          </div>
+
+          <!-- Parking Duration (Hours) -->
+          <div class="form-group">
+            <label for="parking-hours">Parking Duration (Hours) *</label>
+            <input 
+              type="number" 
+              id="parking-hours" 
+              min="1" 
+              max="24" 
+              value="2" 
+              oninput="updateFeeCalculation()" 
+              required
+            >
+          </div>
+
+          <!-- Auto Fee Calculation Box -->
+          <div class="fee-calculator-box">
+            <div class="fee-row">
+              <span>Hourly Rate:</span>
+              <span id="rate-display">$5.00 / hr</span>
+            </div>
+            <div class="fee-row">
+              <span>Duration:</span>
+              <span id="duration-display">2 Hours</span>
+            </div>
+            <div class="fee-total-row">
+              <span>Total Estimated Fee:</span>
+              <span class="total-amount" id="total-fee-display">$10.00</span>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="form-buttons">
+            <button type="submit" name="actionType" value="reserve" class="btn btn-secondary">
+              🟠 Reserve Slot
+            </button>
+            <button type="submit" name="actionType" value="checkin" class="btn btn-primary">
+              🚗 Park Now (Check-In Immediately)
+            </button>
+            <button type="button" class="btn btn-outline" onclick="clearBookingForm()">
+              ✕ Clear Form
+            </button>
+          </div>
+
+        </form>
+      </section>
+
+    </div>
+
+    <!-- BOTTOM: ACTIVE BOOKINGS TABLE -->
+    <section class="section-card">
+      <div class="section-header">
+        <h2>📋 Current Bookings & Activity</h2>
+      </div>
+
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Slot #</th>
+              <th>Status</th>
+              <th>Driver Name</th>
+              <th>Vehicle Number</th>
+              <th>Vehicle Type</th>
+              <th>Duration</th>
+              <th>Total Fee</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="bookings-table-body">
+            <!-- Rendered dynamically by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+      <p>Park Buddy &copy; 2026 - Simple College Parking Management System</p>
+      <p>Built with Pure HTML, CSS, and Vanilla JavaScript (No external libraries)</p>
+    </footer>
+
+  </div>
+
+  <!-- ===================================================
+       11. JAVASCRIPT LOGIC
+       =================================================== -->
+  <script>
+    /* -----------------------------------------------------
+       A. DATA DEFINITIONS & INITIAL SAMPLE DATA
+       ----------------------------------------------------- */
+    // Hourly rates in USD for different vehicle types
+    const HOURLY_RATES = {
+      Car: 5,
+      Bike: 2,
+      SUV: 8
+    };
+
+    // Default sample slots (12 slots) used if localStorage is empty
+    const DEFAULT_SLOTS = [
+      { id: 1, name: "Slot 01", status: "occupied", driver: "Alex Morgan", vehicle: "NY-8821", type: "Car", hours: 2, fee: 10 },
+      { id: 2, name: "Slot 02", status: "reserved", driver: "Sarah Connor", vehicle: "CA-4092", type: "Bike", hours: 3, fee: 6 },
+      { id: 3, name: "Slot 03", status: "available", driver: "", vehicle: "", type: "Car", hours: 0, fee: 0 },
+      { id: 4, name: "Slot 04", status: "available", driver: "", vehicle: "", type: "Car", hours: 0, fee: 0 },
+      { id: 5, name: "Slot 05", status: "occupied", driver: "David Miller", vehicle: "TX-1903", type: "SUV", hours: 4, fee: 32 },
+      { id: 6, name: "Slot 06", status: "available", driver: "", vehicle: "", type: "Car", hours: 0, fee: 0 },
+      { id: 7, name: "Slot 07", status: "available", driver: "", vehicle: "", type: "Car", hours: 0, fee: 0 },
+      { id: 8, name: "Slot 08", status: "reserved", driver: "Emily Watson", vehicle: "FL-5512", type: "Car", hours: 1, fee: 5 },
+      { id: 9, name: "Slot 09", status: "available", driver: "", vehicle: "", type: "Car", hours: 0, fee: 0 },
+      { id: 10, name: "Slot 10", status: "available", driver: "", vehicle: "", type: "Car", hours: 0, fee: 0 },
+      { id: 11, name: "Slot 11", status: "available", driver: "", vehicle: "", type: "Car", hours: 0, fee: 0 },
+      { id: 12, name: "Slot 12", status: "available", driver: "", vehicle: "", type: "Car", hours: 0, fee: 0 }
+    ];
+
+    // Global application state
+    let parkingSlots = [];
+    let currentFilter = "all";
+    let searchQuery = "";
+    let selectedSlotId = null;
+    let notificationTimeout = null;
+
+    // Backend API Base URL
+    // When served by Node.js server (http://localhost:3000), uses '/api'
+    // When opened via file:// or another dev server, targets 'http://localhost:3000/api'
+    const API_BASE = (window.location.origin.startsWith('http') && !window.location.origin.includes(':5500'))
+      ? window.location.origin + '/api'
+      : 'http://localhost:3000/api';
+
+    let isBackendOnline = false;
+
+    /* -----------------------------------------------------
+       B. DATA SYNC: BACKEND API & LOCALSTORAGE FALLBACK
+       ----------------------------------------------------- */
+
+    // Update the visual status badge in the header
+    function updateServerStatusBadge(online) {
+      isBackendOnline = online;
+      const statusPill = document.getElementById("server-status-pill");
+      const statusText = document.getElementById("server-status-text");
+      const statusDot = document.getElementById("server-status-dot");
+
+      if (online) {
+        if (statusText) statusText.textContent = "🟢 Backend Connected (API)";
+        if (statusDot) statusDot.style.backgroundColor = "#22c55e";
+        if (statusPill) statusPill.title = "Connected to Node.js backend. Data is saved in parking_data.json.";
+      } else {
+        if (statusText) statusText.textContent = "🟠 LocalStorage Mode (Offline)";
+        if (statusDot) statusDot.style.backgroundColor = "#f59e0b";
+        if (statusPill) statusPill.title = "Backend not detected. Start with 'node server.js' to use backend API.";
+      }
+    }
+
+    // Fetch slots from backend server (GET /api/slots)
+    async function fetchSlotsFromBackend() {
+      try {
+        const response = await fetch(`${API_BASE}/slots`);
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        const data = await response.json();
+
+        if (data.success && Array.isArray(data.slots)) {
+          parkingSlots = data.slots;
+          updateServerStatusBadge(true);
+          saveParkingDataToLocalStorage(); // Also cache locally
+          renderDashboard();
+          return true;
+        }
+      } catch (err) {
+        console.warn("Backend server not responding, falling back to localStorage:", err.message);
+        updateServerStatusBadge(false);
+        loadParkingDataFromLocalStorage();
+        renderDashboard();
+        return false;
+      }
+    }
+
+    // Load slots from browser localStorage (backup mode)
+    function loadParkingDataFromLocalStorage() {
+      const storedData = localStorage.getItem("parkBuddySlots");
+      if (storedData) {
+        try {
+          parkingSlots = JSON.parse(storedData);
+        } catch (e) {
+          console.error("Error reading localStorage, loading defaults", e);
+          parkingSlots = JSON.parse(JSON.stringify(DEFAULT_SLOTS));
+        }
+      } else {
+        parkingSlots = JSON.parse(JSON.stringify(DEFAULT_SLOTS));
+        saveParkingDataToLocalStorage();
+      }
+    }
+
+    // Save slots to browser localStorage
+    function saveParkingDataToLocalStorage() {
+      localStorage.setItem("parkBuddySlots", JSON.stringify(parkingSlots));
+    }
+
+    // Reset button handler to reload initial sample data
+    async function resetToSampleData() {
+      if (!confirm("Reset parking slots back to initial sample state?")) return;
+
+      if (isBackendOnline) {
+        try {
+          const res = await fetch(`${API_BASE}/slots/reset`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          const result = await res.json();
+          if (result.success) {
+            parkingSlots = result.slots;
+            saveParkingDataToLocalStorage();
+            clearBookingForm();
+            renderDashboard();
+            showNotification("🔄 " + result.message, "info");
+            return;
+          }
+        } catch (err) {
+          console.error("Backend reset failed:", err);
+        }
+      }
+
+      // Offline / LocalStorage reset fallback
+      parkingSlots = JSON.parse(JSON.stringify(DEFAULT_SLOTS));
+      saveParkingDataToLocalStorage();
+      clearBookingForm();
+      renderDashboard();
+      showNotification("🔄 System reset to initial sample data (Local Mode)!", "info");
+    }
+
+    /* -----------------------------------------------------
+       C. NOTIFICATION SYSTEM
+       ----------------------------------------------------- */
+    // Show friendly success or error messages to the user
+    function showNotification(message, type = "success") {
+      const notif = document.getElementById("notification");
+      const notifMsg = document.getElementById("notification-message");
+
+      // Clear existing timer if any
+      if (notificationTimeout) {
+        clearTimeout(notificationTimeout);
+      }
+
+      notif.className = "";
+      notif.classList.add(type);
+      notifMsg.textContent = message;
+      notif.style.display = "flex";
+
+      // Auto-hide after 4.5 seconds
+      notificationTimeout = setTimeout(() => {
+        closeNotification();
+      }, 4500);
+    }
+
+    // Close notification box
+    function closeNotification() {
+      const notif = document.getElementById("notification");
+      notif.style.display = "none";
+    }
+
+    /* -----------------------------------------------------
+       D. FEE CALCULATION FUNCTION
+       ----------------------------------------------------- */
+    // Automatically recalculates fee based on vehicle type and hours
+    function updateFeeCalculation() {
+      const vehicleType = document.getElementById("vehicle-type").value;
+      const hoursInput = document.getElementById("parking-hours");
+      let hours = parseInt(hoursInput.value, 10);
+
+      // Validate hours range
+      if (isNaN(hours) || hours < 1) {
+        hours = 1;
+      }
+
+      const rate = HOURLY_RATES[vehicleType] || 5;
+      const totalFee = rate * hours;
+
+      document.getElementById("rate-display").textContent = `$${rate.toFixed(2)} / hr`;
+      document.getElementById("duration-display").textContent = `${hours} Hour${hours > 1 ? "s" : ""}`;
+      document.getElementById("total-fee-display").textContent = `$${totalFee.toFixed(2)}`;
+
+      return { rate, hours, totalFee };
+    }
+
+    /* -----------------------------------------------------
+       E. SLOT SELECTION
+       ----------------------------------------------------- */
+    // Select an available slot when clicked
+    function selectSlot(slotId) {
+      const slot = parkingSlots.find(s => s.id === slotId);
+      if (!slot) return;
+
+      if (slot.status !== "available") {
+        showNotification(`⚠️ ${slot.name} is currently ${slot.status.toUpperCase()}. Please choose an available green slot.`, "error");
+        return;
+      }
+
+      selectedSlotId = slotId;
+      document.getElementById("selected-slot-id").value = slotId;
+      document.getElementById("selected-slot-text").textContent = `${slot.name} (Available 🟢)`;
+
+      // Smooth scroll down to booking form on smaller screens
+      const formSection = document.getElementById("booking-section");
+      if (window.innerWidth < 992) {
+        formSection.scrollIntoView({ behavior: "smooth" });
+      }
+
+      renderSlots();
+      showNotification(`Selected ${slot.name}! Fill in the details to complete your booking.`, "info");
+    }
+
+    // Deselect currently picked slot
+    function clearSelectedSlot() {
+      selectedSlotId = null;
+      document.getElementById("selected-slot-id").value = "";
+      document.getElementById("selected-slot-text").textContent = "None (Click a green slot)";
+      renderSlots();
+    }
+
+    // Clear form inputs
+    function clearBookingForm() {
+      document.getElementById("booking-form").reset();
+      clearSelectedSlot();
+      updateFeeCalculation();
+    }
+
+    /* -----------------------------------------------------
+       F. BOOKING SUBMISSION (RESERVE OR CHECK-IN NOW)
+       ----------------------------------------------------- */
+    async function handleBookingSubmit(event) {
+      event.preventDefault();
+
+      // Submit action: "reserve" or "checkin"
+      const actionType = event.submitter ? event.submitter.value : "reserve";
+
+      // 1. Validate slot selection
+      if (!selectedSlotId) {
+        showNotification("⚠️ Please select an available green parking slot first!", "error");
+        return;
+      }
+
+      const slot = parkingSlots.find(s => s.id === selectedSlotId);
+      if (!slot || slot.status !== "available") {
+        showNotification("⚠️ Selected slot is no longer available. Please pick another slot.", "error");
+        clearSelectedSlot();
+        return;
+      }
+
+      // 2. Validate input fields
+      const driverName = document.getElementById("driver-name").value.trim();
+      const vehicleNumber = document.getElementById("vehicle-number").value.trim().toUpperCase();
+      const vehicleType = document.getElementById("vehicle-type").value;
+      const hours = parseInt(document.getElementById("parking-hours").value, 10);
+
+      if (!driverName) {
+        showNotification("⚠️ Please enter the driver's full name.", "error");
+        return;
+      }
+
+      if (!vehicleNumber) {
+        showNotification("⚠️ Please enter the vehicle number.", "error");
+        return;
+      }
+
+      if (isNaN(hours) || hours < 1) {
+        showNotification("⚠️ Parking duration must be at least 1 hour.", "error");
+        return;
+      }
+
+      // Calculate fee
+      const rate = HOURLY_RATES[vehicleType] || 5;
+      const fee = rate * hours;
+      const newStatus = (actionType === "checkin") ? "occupied" : "reserved";
+
+      // If backend is connected, save to server database file
+      if (isBackendOnline) {
+        try {
+          const res = await fetch(`${API_BASE}/slots/book`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              slotId: selectedSlotId,
+              driver: driverName,
+              vehicle: vehicleNumber,
+              type: vehicleType,
+              hours: hours,
+              actionType: actionType
+            })
+          });
+          const result = await res.json();
+          if (!result.success) {
+            showNotification("⚠️ " + result.message, "error");
+            return;
+          }
+
+          clearBookingForm();
+          await fetchSlotsFromBackend();
+          showNotification(`✅ ` + result.message, "success");
+          return;
+        } catch (err) {
+          console.error("Backend book error, falling back to local storage:", err);
+        }
+      }
+
+      // Offline / LocalStorage fallback
+      slot.status = newStatus;
+      slot.driver = driverName;
+      slot.vehicle = vehicleNumber;
+      slot.type = vehicleType;
+      slot.hours = hours;
+      slot.fee = fee;
+
+      saveParkingDataToLocalStorage();
+      renderDashboard();
+      clearBookingForm();
+
+      if (newStatus === "occupied") {
+        showNotification(`🎉 ${slot.name} has been booked and Checked-In immediately for ${driverName} (${vehicleNumber})!`, "success");
+      } else {
+        showNotification(`✅ ${slot.name} successfully Reserved for ${driverName}! Total fee: $${fee.toFixed(2)}.`, "success");
+      }
+    }
+
+    /* -----------------------------------------------------
+       G. CHECK-IN, CHECK-OUT & CANCEL ACTIONS
+       ----------------------------------------------------- */
+    // Check-in a reserved slot (turns status from 'reserved' to 'occupied')
+    async function checkInSlot(slotId) {
+      const slot = parkingSlots.find(s => s.id === slotId);
+      if (!slot) return;
+
+      if (slot.status !== "reserved") {
+        showNotification(`⚠️ Slot is ${slot.status}, cannot check-in.`, "error");
+        return;
+      }
+
+      if (isBackendOnline) {
+        try {
+          const res = await fetch(`${API_BASE}/slots/checkin`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ slotId })
+          });
+          const result = await res.json();
+          if (!result.success) {
+            showNotification("⚠️ " + result.message, "error");
+            return;
+          }
+          await fetchSlotsFromBackend();
+          showNotification("🚗 " + result.message, "success");
+          return;
+        } catch (err) {
+          console.error("Backend checkin error:", err);
+        }
+      }
+
+      // Local fallback
+      slot.status = "occupied";
+      saveParkingDataToLocalStorage();
+      renderDashboard();
+      showNotification(`🚗 Check-In successful! Vehicle ${slot.vehicle} is now parked at ${slot.name}.`, "success");
+    }
+
+    // Check-out an occupied slot (frees up the slot to 'available')
+    async function checkOutSlot(slotId) {
+      const slot = parkingSlots.find(s => s.id === slotId);
+      if (!slot) return;
+
+      if (slot.status !== "occupied") {
+        showNotification(`⚠️ Only occupied slots can be checked out.`, "error");
+        return;
+      }
+
+      if (isBackendOnline) {
+        try {
+          const res = await fetch(`${API_BASE}/slots/checkout`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ slotId })
+          });
+          const result = await res.json();
+          if (!result.success) {
+            showNotification("⚠️ " + result.message, "error");
+            return;
+          }
+          await fetchSlotsFromBackend();
+          showNotification("🏁 " + result.message, "success");
+          return;
+        } catch (err) {
+          console.error("Backend checkout error:", err);
+        }
+      }
+
+      // Local fallback
+      const driver = slot.driver;
+      const vehicle = slot.vehicle;
+      const fee = slot.fee;
+
+      slot.status = "available";
+      slot.driver = "";
+      slot.vehicle = "";
+      slot.type = "Car";
+      slot.hours = 0;
+      slot.fee = 0;
+
+      saveParkingDataToLocalStorage();
+      renderDashboard();
+      showNotification(`🏁 Check-Out complete for ${vehicle} (${driver}). Fee paid: $${fee.toFixed(2)}. ${slot.name} is now Available!`, "success");
+    }
+
+    // Cancel a reserved booking
+    async function cancelBooking(slotId) {
+      const slot = parkingSlots.find(s => s.id === slotId);
+      if (!slot) return;
+
+      if (!confirm(`Are you sure you want to cancel the reservation for ${slot.name} (${slot.driver})?`)) {
+        return;
+      }
+
+      if (isBackendOnline) {
+        try {
+          const res = await fetch(`${API_BASE}/slots/cancel`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ slotId })
+          });
+          const result = await res.json();
+          if (!result.success) {
+            showNotification("⚠️ " + result.message, "error");
+            return;
+          }
+          await fetchSlotsFromBackend();
+          showNotification("❌ " + result.message, "info");
+          return;
+        } catch (err) {
+          console.error("Backend cancel error:", err);
+        }
+      }
+
+      // Local fallback
+      slot.status = "available";
+      slot.driver = "";
+      slot.vehicle = "";
+      slot.type = "Car";
+      slot.hours = 0;
+      slot.fee = 0;
+
+      saveParkingDataToLocalStorage();
+      renderDashboard();
+      showNotification(`❌ Reservation for ${slot.name} has been cancelled.`, "info");
+    }
+
+    /* -----------------------------------------------------
+       H. SEARCH & FILTERING
+       ----------------------------------------------------- */
+    function handleSearch() {
+      searchQuery = document.getElementById("search-input").value.trim().toLowerCase();
+      renderSlots();
+      renderBookingsTable();
+    }
+
+    function setFilter(filterType, element) {
+      currentFilter = filterType;
+
+      // Update active filter button styling
+      document.querySelectorAll(".filter-btn").forEach(btn => {
+        btn.classList.remove("active");
+      });
+      if (element) {
+        element.classList.add("active");
+      }
+
+      renderSlots();
+    }
+
+    // Check if a slot matches current filter and search input
+    function matchesFilterAndSearch(slot) {
+      // 1. Status Filter check
+      if (currentFilter !== "all" && slot.status !== currentFilter) {
+        return false;
+      }
+
+      // 2. Search query check
+      if (searchQuery) {
+        const query = searchQuery;
+        const nameMatch = slot.name.toLowerCase().includes(query);
+        const statusMatch = slot.status.toLowerCase().includes(query);
+        const driverMatch = slot.driver.toLowerCase().includes(query);
+        const vehicleMatch = slot.vehicle.toLowerCase().includes(query);
+        const typeMatch = slot.type.toLowerCase().includes(query);
+
+        return nameMatch || statusMatch || driverMatch || vehicleMatch || typeMatch;
+      }
+
+      return true;
+    }
+
+    /* -----------------------------------------------------
+       I. RENDER FUNCTIONS
+       ----------------------------------------------------- */
+    // Helper to get vehicle icon
+    function getVehicleIcon(type) {
+      if (type === "Bike") return "🏍️";
+      if (type === "SUV") return "🚙";
+      return "🚗";
+    }
+
+    // Update the 4 stats counters at the top
+    function updateStats() {
+      const total = parkingSlots.length;
+      const available = parkingSlots.filter(s => s.status === "available").length;
+      const reserved = parkingSlots.filter(s => s.status === "reserved").length;
+      const occupied = parkingSlots.filter(s => s.status === "occupied").length;
+
+      document.getElementById("stat-total").textContent = total;
+      document.getElementById("stat-available").textContent = available;
+      document.getElementById("stat-reserved").textContent = reserved;
+      document.getElementById("stat-occupied").textContent = occupied;
+    }
+
+    // Render the 12 parking slot cards
+    function renderSlots() {
+      const container = document.getElementById("slots-container");
+      container.innerHTML = "";
+
+      const filteredSlots = parkingSlots.filter(matchesFilterAndSearch);
+
+      if (filteredSlots.length === 0) {
+        container.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 30px; color: #64748b;">
+            <p style="font-size: 1.8rem; margin-bottom: 8px;">🔍</p>
+            <p><strong>No parking slots found.</strong></p>
+            <p style="font-size: 0.85rem;">Try adjusting your search query or status filter.</p>
+          </div>
+        `;
+        return;
+      }
+
+      filteredSlots.forEach(slot => {
+        const card = document.createElement("div");
+        card.className = `slot-card status-${slot.status}`;
+
+        // Highlight if currently selected in form
+        if (slot.id === selectedSlotId) {
+          card.classList.add("selected");
+        }
+
+        // On card click (select available slot)
+        card.onclick = (e) => {
+          // If clicked on an action button inside card, don't trigger select
+          if (e.target.tagName === "BUTTON") return;
+          selectSlot(slot.id);
+        };
+
+        // Header with Slot Name and Status Badge
+        let statusBadgeText = "Available";
+        if (slot.status === "occupied") statusBadgeText = "Occupied";
+        if (slot.status === "reserved") statusBadgeText = "Reserved";
+
+        // Body content based on status
+        let bodyContent = "";
+        let actionButtons = "";
+
+        if (slot.status === "available") {
+          bodyContent = `
+            <div class="slot-empty-text">
+              <span>🟢 Ready to park</span>
+            </div>
+            <div class="slot-info-item" style="font-size: 0.78rem; color: #15803d; margin-top: 4px;">
+              Click to choose this slot
+            </div>
+          `;
+          actionButtons = `
+            <button class="mini-btn btn-select" onclick="selectSlot(${slot.id})">
+              ✓ Select Slot
+            </button>
+          `;
+        } else {
+          const icon = getVehicleIcon(slot.type);
+          bodyContent = `
+            <div class="slot-info-item">
+              <strong>${icon} ${slot.vehicle || "N/A"}</strong>
+            </div>
+            <div class="slot-info-item">
+              Driver: <strong>${slot.driver || "N/A"}</strong>
+            </div>
+            <div class="slot-info-item">
+              Fee: <strong>$${slot.fee.toFixed(2)}</strong> (${slot.hours}h)
+            </div>
+          `;
+
+          if (slot.status === "reserved") {
+            actionButtons = `
+              <button class="mini-btn btn-checkin" onclick="checkInSlot(${slot.id})" title="Check In">
+                🚗 Check-In
+              </button>
+              <button class="mini-btn btn-cancel" onclick="cancelBooking(${slot.id})" title="Cancel">
+                ✕ Cancel
+              </button>
+            `;
+          } else if (slot.status === "occupied") {
+            actionButtons = `
+              <button class="mini-btn btn-checkout" onclick="checkOutSlot(${slot.id})" title="Check Out & Free Slot">
+                🏁 Check-Out
+              </button>
+            `;
+          }
+        }
+
+        card.innerHTML = `
+          <div class="slot-top">
+            <span class="slot-name">${slot.name}</span>
+            <span class="status-badge">${statusBadgeText}</span>
+          </div>
+          <div class="slot-body">
+            ${bodyContent}
+          </div>
+          <div class="slot-actions">
+            ${actionButtons}
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    // Render active bookings in the bottom table
+    function renderBookingsTable() {
+      const tbody = document.getElementById("bookings-table-body");
+      tbody.innerHTML = "";
+
+      // Only show slots that are reserved or occupied
+      const bookedSlots = parkingSlots.filter(s => s.status !== "available" && matchesFilterAndSearch(s));
+
+      if (bookedSlots.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="empty-state">
+              <div class="empty-state-icon">🅿️</div>
+              <p>No active bookings found matching your search or filters.</p>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      bookedSlots.forEach(slot => {
+        const row = document.createElement("tr");
+
+        let statusBadge = "";
+        let actionButtons = "";
+
+        if (slot.status === "reserved") {
+          statusBadge = `<span class="status-badge" style="background:#fef3c7; color:#b45309;">Reserved</span>`;
+          actionButtons = `
+            <button class="mini-btn btn-checkin" onclick="checkInSlot(${slot.id})">🚗 Check-In</button>
+            <button class="mini-btn btn-cancel" onclick="cancelBooking(${slot.id})">✕ Cancel</button>
+          `;
+        } else if (slot.status === "occupied") {
+          statusBadge = `<span class="status-badge" style="background:#fee2e2; color:#b91c1c;">Occupied</span>`;
+          actionButtons = `
+            <button class="mini-btn btn-checkout" onclick="checkOutSlot(${slot.id})">🏁 Check-Out</button>
+          `;
+        }
+
+        const icon = getVehicleIcon(slot.type);
+
+        row.innerHTML = `
+          <td><strong>${slot.name}</strong></td>
+          <td>${statusBadge}</td>
+          <td>${slot.driver}</td>
+          <td><code>${slot.vehicle}</code></td>
+          <td>${icon} ${slot.type}</td>
+          <td>${slot.hours} Hour${slot.hours > 1 ? "s" : ""}</td>
+          <td><strong>$${slot.fee.toFixed(2)}</strong></td>
+          <td>
+            <div class="table-actions">
+              ${actionButtons}
+            </div>
+          </td>
+        `;
+
+        tbody.appendChild(row);
+      });
+    }
+
+    // Master function to refresh whole UI
+    function renderDashboard() {
+      updateStats();
+      renderSlots();
+      renderBookingsTable();
+    }
+
+    /* -----------------------------------------------------
+       J. INITIALIZATION
+       ----------------------------------------------------- */
+    // Run on page load: sync with backend server or fallback to localStorage
+    window.onload = async function() {
+      updateFeeCalculation();
+      await fetchSlotsFromBackend();
+    };
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,5 @@
+# Don't upload node_modules - it contains hundreds of dependency files
+node_modules/
+
+# Don't upload parking data (it gets auto-created by the server)
+parking_data.json

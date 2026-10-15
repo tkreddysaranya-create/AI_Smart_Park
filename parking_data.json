@@ -1,0 +1,122 @@
+[
+  {
+    "id": 1,
+    "name": "Slot 01",
+    "status": "occupied",
+    "driver": "Alex Morgan",
+    "vehicle": "NY-8821",
+    "type": "Car",
+    "hours": 2,
+    "fee": 10
+  },
+  {
+    "id": 2,
+    "name": "Slot 02",
+    "status": "reserved",
+    "driver": "Sarah Connor",
+    "vehicle": "CA-4092",
+    "type": "Bike",
+    "hours": 3,
+    "fee": 6
+  },
+  {
+    "id": 3,
+    "name": "Slot 03",
+    "status": "available",
+    "driver": "",
+    "vehicle": "",
+    "type": "Car",
+    "hours": 0,
+    "fee": 0
+  },
+  {
+    "id": 4,
+    "name": "Slot 04",
+    "status": "available",
+    "driver": "",
+    "vehicle": "",
+    "type": "Car",
+    "hours": 0,
+    "fee": 0
+  },
+  {
+    "id": 5,
+    "name": "Slot 05",
+    "status": "occupied",
+    "driver": "David Miller",
+    "vehicle": "TX-1903",
+    "type": "SUV",
+    "hours": 4,
+    "fee": 32
+  },
+  {
+    "id": 6,
+    "name": "Slot 06",
+    "status": "available",
+    "driver": "",
+    "vehicle": "",
+    "type": "Car",
+    "hours": 0,
+    "fee": 0
+  },
+  {
+    "id": 7,
+    "name": "Slot 07",
+    "status": "available",
+    "driver": "",
+    "vehicle": "",
+    "type": "Car",
+    "hours": 0,
+    "fee": 0
+  },
+  {
+    "id": 8,
+    "name": "Slot 08",
+    "status": "reserved",
+    "driver": "Emily Watson",
+    "vehicle": "FL-5512",
+    "type": "Car",
+    "hours": 1,
+    "fee": 5
+  },
+  {
+    "id": 9,
+    "name": "Slot 09",
+    "status": "available",
+    "driver": "",
+    "vehicle": "",
+    "type": "Car",
+    "hours": 0,
+    "fee": 0
+  },
+  {
+    "id": 10,
+    "name": "Slot 10",
+    "status": "available",
+    "driver": "",
+    "vehicle": "",
+    "type": "Car",
+    "hours": 0,
+    "fee": 0
+  },
+  {
+    "id": 11,
+    "name": "Slot 11",
+    "status": "available",
+    "driver": "",
+    "vehicle": "",
+    "type": "Car",
+    "hours": 0,
+    "fee": 0
+  },
+  {
+    "id": 12,
+    "name": "Slot 12",
+    "status": "available",
+    "driver": "",
+    "vehicle": "",
+    "type": "Car",
+    "hours": 0,
+    "fee": 0
+  }
+]
